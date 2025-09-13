@@ -253,7 +253,10 @@ export const createOIDCProvider = async (db: LobeChatDatabase): Promise<Provider
   };
 
   // 创建提供者实例
-  const baseUrl = urlJoin(appEnv.APP_URL!, '/oidc');
+  if (!appEnv.APP_URL) {
+    throw new Error('APP_URL is required for OIDC Provider');
+  }
+  const baseUrl = urlJoin(appEnv.APP_URL, '/oidc');
 
   const provider = new Provider(baseUrl, configuration);
   provider.proxy = true;
