@@ -1,6 +1,14 @@
 'use client';
 
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 /**
  * WHY: Keep speed user-adjustable and persistent without forking TTS internals.
@@ -11,7 +19,7 @@ type Ctx = { rate: number; setRate: (n: number) => void };
 const PlaybackSpeedCtx = createContext<Ctx | null>(null);
 
 const STORAGE_KEY = 'tts.playbackRate';
-const clamp = (v: number, min = 0.5, max = 2.0) => Math.min(max, Math.max(min, v));
+const clamp = (v: number, min = 0.5, max = 2) => Math.min(max, Math.max(min, v));
 
 function applyRateToAudios(rate: number, root: Document | HTMLElement = document) {
   const audios = root.querySelectorAll('audio');
@@ -20,7 +28,9 @@ function applyRateToAudios(rate: number, root: Document | HTMLElement = document
       // Some browsers may ignore on certain codecs; harmless if so
       // Only set if different to avoid restarting decoders on some engines
       if (a.playbackRate !== rate) a.playbackRate = rate;
-    } catch {}
+    } catch {
+      // Ignore errors when setting playback rate
+    }
   });
 }
 
@@ -35,10 +45,18 @@ export const PlaybackSpeedProvider: React.FC<{ children?: React.ReactNode }> = (
   const setRate = useCallback((n: number) => {
     const v = clamp(Number(n));
     _setRate(v);
-    try { localStorage.setItem(STORAGE_KEY, String(v)); } catch {}
+    try {
+      localStorage.setItem(STORAGE_KEY, String(v));
+    } catch {
+      // Ignore localStorage errors
+    }
     applyRateToAudios(v);
     // Broadcast to other tabs
-    try { new BroadcastChannel('tts-rate').postMessage({ rate: v }); } catch {}
+    try {
+      new BroadcastChannel('tts-rate').postMessage({ rate: v });
+    } catch {
+      // Ignore BroadcastChannel errors
+    }
   }, []);
 
   useEffect(() => {
@@ -48,7 +66,11 @@ export const PlaybackSpeedProvider: React.FC<{ children?: React.ReactNode }> = (
     const onPlay = (e: Event) => {
       const t = e.target as HTMLAudioElement | null;
       if (!t) return;
-      try { if (t.playbackRate !== rate) t.playbackRate = rate; } catch {}
+      try {
+        if (t.playbackRate !== rate) t.playbackRate = rate;
+      } catch {
+        // Ignore playback rate errors
+      }
     };
     document.addEventListener('play', onPlay, true);
 
@@ -69,11 +91,13 @@ export const PlaybackSpeedProvider: React.FC<{ children?: React.ReactNode }> = (
     let ch: BroadcastChannel | null = null;
     try {
       ch = new BroadcastChannel('tts-rate');
-      ch.onmessage = (ev) => {
+      ch.addEventListener('message', (ev) => {
         const r = Number(ev?.data?.rate);
         if (Number.isFinite(r)) _setRate(clamp(r));
-      };
-    } catch {}
+      });
+    } catch {
+      // Ignore BroadcastChannel errors
+    }
 
     return () => {
       document.removeEventListener('play', onPlay, true);

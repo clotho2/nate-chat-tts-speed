@@ -4,14 +4,22 @@
 
 export const runtime = 'edge';
 
+// RequestInit and related types are available globally in Edge Runtime
+
 const upstream = (path: string) => {
   const base = (process.env.OLLAMA_BASE_URL || '').replace(/\/$/, '');
   return `${base}/${path}`;
 };
 
 const hopHeaders = new Set([
-  'connection', 'keep-alive', 'proxy-authenticate', 'proxy-authorization',
-  'te', 'trailer', 'transfer-encoding', 'upgrade'
+  'connection',
+  'keep-alive',
+  'proxy-authenticate',
+  'proxy-authorization',
+  'te',
+  'trailer',
+  'transfer-encoding',
+  'upgrade',
 ]);
 
 function buildHeaders(req: Request) {
@@ -24,14 +32,15 @@ function buildHeaders(req: Request) {
   return h;
 }
 
-async function passthrough(req: Request, params: { path?: string[] }) {
-  const segments = (params.path || []).join('/');
+async function passthrough(req: Request, params: Promise<{ path?: string[] }>) {
+  const resolvedParams = await params;
+  const segments = (resolvedParams.path || []).join('/');
   const url = upstream(segments);
 
-  const init: RequestInit = {
-    method: req.method,
-    headers: buildHeaders(req),
+  const init: globalThis.RequestInit = {
     body: req.method === 'GET' || req.method === 'HEAD' ? undefined : req.body,
+    headers: buildHeaders(req),
+    method: req.method,
     // Keep streaming behavior for NDJSON
     redirect: 'manual',
   };
@@ -44,15 +53,15 @@ async function passthrough(req: Request, params: { path?: string[] }) {
     if (!hopHeaders.has(k.toLowerCase())) outHeaders.set(k, v);
   });
 
-  return new Response(res.body, { status: res.status, headers: outHeaders });
+  return new Response(res.body, { headers: outHeaders, status: res.status });
 }
 
-export async function GET(req: Request, { params }: { params: { path?: string[] } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ path?: string[] }> }) {
   return passthrough(req, params);
 }
-export async function POST(req: Request, { params }: { params: { path?: string[] } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ path?: string[] }> }) {
   return passthrough(req, params);
 }
-export async function OPTIONS(req: Request, { params }: { params: { path?: string[] } }) {
+export async function OPTIONS(req: Request, { params }: { params: Promise<{ path?: string[] }> }) {
   return passthrough(req, params);
 }
