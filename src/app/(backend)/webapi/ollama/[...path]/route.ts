@@ -7,7 +7,7 @@ export const runtime = 'edge';
 // RequestInit and related types are available globally in Edge Runtime
 
 const upstream = (path: string) => {
-  const base = (process.env.OLLAMA_BASE_URL || '').replace(/\/$/, '');
+  const base = (process.env.OLLAMA_PROXY_URL || process.env.OLLAMA_BASE_URL || '').replace(/\/$/, '');
   return `${base}/${path}`;
 };
 
