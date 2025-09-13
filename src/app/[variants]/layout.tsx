@@ -6,6 +6,8 @@ import { ReactNode } from 'react';
 import { isRtlLang } from 'rtl-detect';
 
 import Analytics from '@/components/Analytics';
+import { PlaybackSpeedProvider } from '@/components/tts/PlaybackSpeedProvider';
+import SpeedControlFloating from '@/components/tts/SpeedControlFloating';
 import { DEFAULT_LANG } from '@/const/locale';
 import { isDesktop } from '@/const/version';
 import PWAInstall from '@/features/PWAInstall';
@@ -39,24 +41,27 @@ const RootLayout = async ({ children, params, modal }: RootLayoutProps) => {
         )}
       </head>
       <body>
-        <NuqsAdapter>
-          <GlobalProvider
-            appearance={theme}
-            isMobile={isMobile}
-            locale={locale}
-            neutralColor={neutralColor}
-            primaryColor={primaryColor}
-            variants={variants}
-          >
-            <AuthProvider>
-              {children}
-              {!isMobile && modal}
-            </AuthProvider>
-            <PWAInstall />
-          </GlobalProvider>
-        </NuqsAdapter>
-        <Analytics />
-        {inVercel && <SpeedInsights />}
+        <PlaybackSpeedProvider>
+          <NuqsAdapter>
+            <GlobalProvider
+              appearance={theme}
+              isMobile={isMobile}
+              locale={locale}
+              neutralColor={neutralColor}
+              primaryColor={primaryColor}
+              variants={variants}
+            >
+              <AuthProvider>
+                {children}
+                {!isMobile && modal}
+              </AuthProvider>
+              <PWAInstall />
+            </GlobalProvider>
+          </NuqsAdapter>
+          <SpeedControlFloating />
+          <Analytics />
+          {inVercel && <SpeedInsights />}
+        </PlaybackSpeedProvider>
       </body>
     </html>
   );
