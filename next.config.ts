@@ -274,12 +274,23 @@ const nextConfig: NextConfig = {
 
   // when external packages in dev mode with turbopack, this config will lead to bundle error
   serverExternalPackages: isProd ? ['@electric-sql/pglite'] : undefined,
-  transpilePackages: ['pdfjs-dist', 'mermaid'],
+  transpilePackages: isCI ? [] : ['pdfjs-dist', 'mermaid'],
   typescript: {
     ignoreBuildErrors: true,
   },
 
   webpack(config) {
+    if (isCI) {
+      // Reduce build memory usage in CI
+      config.optimization = config.optimization || {};
+      config.optimization.minimize = false;
+      // Disable filesystem cache which can consume lots of memory on Vercel
+      // https://webpack.js.org/configuration/cache/
+      // Next.js sets a filesystem cache by default; turning it off reduces peak memory
+      // at the cost of slower rebuilds (irrelevant in CI).
+      // @ts-expect-error next types don't expose cache
+      config.cache = false;
+    }
     config.experiments = {
       asyncWebAssembly: true,
       layers: true,
