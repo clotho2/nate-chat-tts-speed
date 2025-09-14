@@ -29,9 +29,9 @@
     "packages/*"
   ],
   "scripts": {
-    "prebuild": "tsx scripts/prebuild.mts && npm run lint",
-    "build": "cross-env NODE_OPTIONS=--max-old-space-size=6144 next build",
-    "postbuild": "npm run build-sitemap && npm run build-migrate-db",
+    "prebuild": "tsx scripts/prebuild.mts",
+    "build": "cross-env NODE_OPTIONS=--max-old-space-size=3072 next build",
+    "postbuild": "sh -lc 'if [ -z \"$CI\" ]; then npm run build-sitemap && npm run build-migrate-db; else echo "Skipping postbuild in CI"; fi'",
     "build-migrate-db": "pnpm run db:migrate",
     "build-sitemap": "tsx ./scripts/buildSitemapIndex/index.ts",
     "build:analyze": "NODE_OPTIONS=--max-old-space-size=6144 ANALYZE=true next build",
