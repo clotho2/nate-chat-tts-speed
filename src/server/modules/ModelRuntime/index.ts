@@ -33,7 +33,8 @@ const getParamsFromPayload = (provider: string, payload: ClientSecretPayload) =>
     }
 
     case ModelProvider.Ollama: {
-      const baseURL = payload?.baseURL || process.env.OLLAMA_PROXY_URL;
+      const envUpstream = process.env.OLLAMA_PROXY_URL || process.env.OLLAMA_BASE_URL;
+      const baseURL = payload?.baseURL || (envUpstream ? '/webapi/ollama' : undefined);
 
       return { baseURL };
     }

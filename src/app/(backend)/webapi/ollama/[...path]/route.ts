@@ -3,6 +3,7 @@
 // Why: avoids mixed-content & CORS; streams NDJSON responses intact.
 
 export const runtime = 'edge';
+export const dynamic = 'force-dynamic';
 
 // RequestInit and related types are available globally in Edge Runtime
 

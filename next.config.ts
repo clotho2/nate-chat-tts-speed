@@ -204,6 +204,11 @@ const nextConfig: NextConfig = {
 
   redirects: async () => [
     {
+      destination: '/webapi/ollama/:slug*',
+      permanent: false,
+      source: '/api/ollama/:slug*',
+    },
+    {
       destination: '/sitemap-index.xml',
       permanent: true,
       source: '/sitemap.xml',
