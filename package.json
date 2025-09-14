@@ -25,7 +25,7 @@
   "license": "MIT",
   "author": "LobeHub <i@lobehub.com>",
   "sideEffects": false,
-  "engines": { "node": "^20 || >=20" },
+  "engines": { "node": "20.x" },
   "workspaces": [
     "packages/*"
   ],
