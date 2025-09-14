@@ -25,7 +25,8 @@ const nextConfig: NextConfig = {
   compiler: {
     emotion: true,
   },
-  compress: isProd,
+  // Disable compression during build to reduce memory usage on Vercel
+  compress: false,
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -45,7 +46,7 @@ const nextConfig: NextConfig = {
     // refs: https://github.com/lobehub/lobe-chat/pull/7430
     serverMinification: false,
     webVitalsAttribution: ['CLS', 'LCP'],
-    webpackMemoryOptimizations: true,
+    webpackMemoryOptimizations: false,
   },
   async headers() {
     const securityHeaders = [
