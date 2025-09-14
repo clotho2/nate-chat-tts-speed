@@ -31,7 +31,7 @@
   ],
   "scripts": {
     "prebuild": "tsx scripts/prebuild.mts",
-    "build": "cross-env NODE_OPTIONS=--max-old-space-size=3072 next build",
+    "build": "cross-env NODE_OPTIONS=--max-old-space-size=6144 next build",
     "build-migrate-db": "pnpm run db:migrate",
     "build-sitemap": "tsx ./scripts/buildSitemapIndex/index.ts",
     "build:analyze": "NODE_OPTIONS=--max-old-space-size=6144 ANALYZE=true next build",

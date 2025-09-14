@@ -5,6 +5,7 @@ import type { NextConfig } from 'next';
 import ReactComponentName from 'react-scan/react-component-name/webpack';
 
 const isProd = process.env.NODE_ENV === 'production';
+const isCI = !!process.env.CI;
 const buildWithDocker = process.env.DOCKER === 'true';
 const isDesktop = process.env.NEXT_PUBLIC_IS_DESKTOP_APP === '1';
 const enableReactScan = !!process.env.REACT_SCAN_MONITOR_API_KEY;
@@ -30,15 +31,17 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   experimental: {
-    optimizePackageImports: [
-      'emoji-mart',
-      '@emoji-mart/react',
-      '@emoji-mart/data',
-      '@icons-pack/react-simple-icons',
-      '@lobehub/ui',
-      '@lobehub/icons',
-      'gpt-tokenizer',
-    ],
+    optimizePackageImports: isCI
+      ? undefined
+      : [
+          'emoji-mart',
+          '@emoji-mart/react',
+          '@emoji-mart/data',
+          '@icons-pack/react-simple-icons',
+          '@lobehub/ui',
+          '@lobehub/icons',
+          'gpt-tokenizer',
+        ],
     // oidc provider depend on constructor.name
     // but swc minification will remove the name
     // so we need to disable it
@@ -318,7 +321,7 @@ const noWrapper = (config: NextConfig) => config;
 const withBundleAnalyzer = process.env.ANALYZE === 'true' ? analyzer() : noWrapper;
 
 const withPWA =
-  isProd && !isDesktop
+  isProd && !isDesktop && !isCI
     ? withSerwistInit({
         register: false,
         swDest: 'public/sw.js',
