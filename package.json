@@ -31,6 +31,7 @@
   "scripts": {
     "prebuild": "tsx scripts/prebuild.mts && npm run lint",
     "build": "cross-env NODE_OPTIONS=--max-old-space-size=6144 next build",
+    "build:vercel": "cross-env NODE_OPTIONS='--max-old-space-size=8192 --max-semi-space-size=128' next build",
     "postbuild": "npm run build-sitemap && npm run build-migrate-db",
     "build-migrate-db": "pnpm run db:migrate",
     "build-sitemap": "tsx ./scripts/buildSitemapIndex/index.ts",

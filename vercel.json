@@ -1,4 +1,9 @@
 {
-  "buildCommand": "bun run build",
-  "installCommand": "bun install"
+  "buildCommand": "NODE_OPTIONS='--max-old-space-size=8192 --max-semi-space-size=128' npm run build:vercel",
+  "installCommand": "bun install",
+  "functions": {
+    "src/app/api/**/*.ts": {
+      "maxDuration": 30
+    }
+  }
 }

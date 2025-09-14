@@ -46,6 +46,9 @@ const nextConfig: NextConfig = {
     serverMinification: false,
     webVitalsAttribution: ['CLS', 'LCP'],
     webpackMemoryOptimizations: true,
+    // Additional memory optimizations for Vercel builds
+    memoryBasedWorkersCount: true,
+    workerThreads: false,
   },
   async headers() {
     const securityHeaders = [
@@ -276,11 +279,61 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
 
-  webpack(config) {
+  webpack(config, { isServer, dev }) {
     config.experiments = {
       asyncWebAssembly: true,
       layers: true,
     };
+
+    // Memory optimizations for Vercel builds
+    if (isProd && !isServer) {
+      // Client-side optimizations
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            default: {
+              minChunks: 2,
+              priority: -20,
+              reuseExistingChunk: true,
+            },
+            vendor: {
+              test: /[\\/]node_modules[\\/]/,
+              name: 'vendors',
+              priority: -10,
+              chunks: 'all',
+              maxSize: 244000, // 244KB max chunk size
+            },
+            common: {
+              name: 'common',
+              minChunks: 2,
+              priority: -5,
+              reuseExistingChunk: true,
+              maxSize: 244000,
+            },
+          },
+        },
+        minimize: true,
+        usedExports: true,
+        sideEffects: false,
+      };
+
+      // Memory-based caching
+      config.cache = {
+        type: 'memory',
+        maxGenerations: 1,
+      };
+    }
+
+    // Server-side optimizations
+    if (isServer) {
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: false,
+        minimize: false,
+      };
+    }
 
     // 开启该插件会导致 pglite 的 fs bundler 被改表
     if (enableReactScan && !isUsePglite) {
