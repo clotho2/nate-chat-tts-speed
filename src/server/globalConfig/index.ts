@@ -38,7 +38,7 @@ export const getServerGlobalConfig = async () => {
       /* ↑ cloud slot ↑ */
       ollama: {
         enabled: isDesktop ? true : undefined,
-        fetchOnClient: isDesktop ? false : !process.env.OLLAMA_PROXY_URL,
+        fetchOnClient: isDesktop ? false : !(process.env.OLLAMA_PROXY_URL || process.env.OLLAMA_BASE_URL),
       },
       qwen: {
         withDeploymentName: true,
@@ -75,7 +75,7 @@ export const getServerGlobalConfig = async () => {
         modelListKey: 'GITEE_AI_MODEL_LIST',
       },
       ollama: {
-        fetchOnClient: !process.env.OLLAMA_PROXY_URL,
+        fetchOnClient: !(process.env.OLLAMA_PROXY_URL || process.env.OLLAMA_BASE_URL),
       },
     }),
     oAuthSSOProviders: authEnv.NEXT_AUTH_SSO_PROVIDERS.trim().split(/[,，]/),

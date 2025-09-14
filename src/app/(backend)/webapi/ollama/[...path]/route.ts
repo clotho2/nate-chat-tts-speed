@@ -45,6 +45,15 @@ async function passthrough(req: Request, params: Promise<{ path?: string[] }>) {
     redirect: 'manual',
   };
 
+  // Basic CORS support if upstream blocks cross-origin (browser preflight)
+  // Allow all origins in proxy response; upstream still enforces its own policy
+  const addCors = (headers: Headers) => {
+    headers.set('Access-Control-Allow-Origin', '*');
+    headers.set('Access-Control-Allow-Headers', headers.get('Access-Control-Request-Headers') || '*');
+    headers.set('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+    return headers;
+  };
+
   const res = await fetch(url, init);
 
   // Pass through streaming body & relevant headers
@@ -53,6 +62,7 @@ async function passthrough(req: Request, params: Promise<{ path?: string[] }>) {
     if (!hopHeaders.has(k.toLowerCase())) outHeaders.set(k, v);
   });
 
+  addCors(outHeaders);
   return new Response(res.body, { headers: outHeaders, status: res.status });
 }
 
@@ -62,6 +72,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ path?: s
 export async function POST(req: Request, { params }: { params: Promise<{ path?: string[] }> }) {
   return passthrough(req, params);
 }
-export async function OPTIONS(req: Request, { params }: { params: Promise<{ path?: string[] }> }) {
-  return passthrough(req, params);
+export async function OPTIONS(req: Request) {
+  const h = new Headers();
+  h.set('Access-Control-Allow-Origin', '*');
+  h.set('Access-Control-Allow-Headers', req.headers.get('Access-Control-Request-Headers') || '*');
+  h.set('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+  return new Response(null, { headers: h, status: 204 });
 }
