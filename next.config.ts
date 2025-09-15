@@ -204,11 +204,6 @@ const nextConfig: NextConfig = {
 
   redirects: async () => [
     {
-      destination: '/webapi/ollama/:slug*',
-      permanent: false,
-      source: '/api/ollama/:slug*',
-    },
-    {
       destination: '/sitemap-index.xml',
       permanent: true,
       source: '/sitemap.xml',
@@ -276,6 +271,16 @@ const nextConfig: NextConfig = {
       source: '/repos',
     },
   ],
+
+  async rewrites() {
+    const rules: { source: string; destination: string }[] = [];
+    const upstream = (process.env.OLLAMA_PROXY_URL || process.env.OLLAMA_BASE_URL || '').replace(/\/$/, '');
+    if (upstream) {
+      // Proxy HTTPS browser calls to HTTP upstream, avoiding mixed content
+      rules.push({ source: '/api/ollama/:path*', destination: `${upstream}/api/:path*` });
+    }
+    return rules;
+  },
 
   // when external packages in dev mode with turbopack, this config will lead to bundle error
   serverExternalPackages: isProd ? ['@electric-sql/pglite'] : undefined,
